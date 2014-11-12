@@ -11,20 +11,39 @@ CLIENT_SECRET = "52QnVb5xvh2HGNHc_af3RXzikrY"
 REDIRECT_URI = 'http://127.0.0.1:5000/authorize_callback'
 
 r = praw.Reddit(user_agent='sugoi_app')
+#r.login()
+#already_done=[]
 ##we might want to get all subreddits and go further
 subreddit = r.get_subreddit("Python")
-r.login()
-already_done=[]
+
+
 
 @app.route('/')
 @app.route("/home")
 def home():
-    link_no_refresh = r.get_authorize_url('UniqueKey')
-    link_no_refresh = "<a href=%s>link</a>" % link_no_refresh
-    text = "First link. Not refreshable %s</br></br>" % link_no_refresh
-    user = r.get_me()
-    print user.name
-    print user.link_karma
+    text=""
+    #access_information = r.get_access_information(code)
+    #url = r.get_authorize_url('uniqueKey', 'identity', True)
+    #webbrowser.open(url)
+    #access_information = r.get_access_information("22CNIdhU1adJnTEOhFL5wLMJfqk")
+    #r.set_access_credentials(**access_information)
+    #user=r.get_me()
+    #print user.name
+    #person = r.get_me()
+    #print person.name
+    ud = dict(request.form.items() + request.args.items())
+    if "code" in ud:
+        code = ud["code"]
+        access_information = r.get_access_information(code)
+        r.set_access_credentials(**access_information)
+        user=r.get_me()
+        print user.name
+    else:
+        link_refresh = r.get_authorize_url('UniqueKey',
+                                       refreshable=True)
+        link_refresh = "After doing that, you can enter <a href=%s>here.</a>" % link_refresh
+        text = "This requries you to be registered and logged into reddit to work. Head over to <a href='reddit.com'>here</a> and do so first. <br><br>%s</br></br>" % link_refresh
+    
     return render_template("home.html",text=text)
 
 @app.route('/authorize_callback')
@@ -38,7 +57,8 @@ def authorized():
     text = 'You are %s and have %u link karma.' % (user.name,
                                                    user.link_karma)
     back_link = "<a href='/'>Try again</a>"
-    return render_template("authorize_callback.html",text=variables_text + '</br></br>' + text + '</br></br>' + back_link)
+    logged_link = "<form action='/' method='GET'><input type='hidden' value='"+code+"' name=code><button type='submit'>Return to home</button></form>"
+    return render_template("authorize_callback.html",text=variables_text + '</br></br>' + text + '</br></br>' + back_link+"<br><br>"+logged_link)
 
 
 
