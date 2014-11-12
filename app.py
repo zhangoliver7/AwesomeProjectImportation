@@ -10,13 +10,16 @@ print data.keys()
 
 @app.route('/')
 def home():
+    #return template of main.html
     pass
 
 @app.route('/search')
 def search():
+    #return template of search.html
     pass
 
-@app.route('results')
+@app.route('/results')
 def results():
+    #return template of results.html
     pass
 
