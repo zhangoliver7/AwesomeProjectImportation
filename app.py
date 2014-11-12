@@ -1,9 +1,6 @@
 from flask import Flask,render_template,request
-import json
-import requests
 from pprint import pprint
-import praw
-import webbrowser
+import praw, time, webbrowser, json, requests
 #pip install praw
 #pip install python-oauth2
 
@@ -13,9 +10,11 @@ CLIENT_ID = "hF055t0_32EozA"
 CLIENT_SECRET = "52QnVb5xvh2HGNHc_af3RXzikrY"
 REDIRECT_URI = 'http://127.0.0.1:5000/authorize_callback'
 
-##r = praw.Reddit(user_agent='sugoi_app')
+r = praw.Reddit(user_agent='sugoi_app')
 ##we might want to get all subreddits and go further
-##subreddit = r.get_subreddit("Python")
+subreddit = r.get_subreddit("Python")
+r.login()
+already_done=[]
 
 @app.route('/')
 @app.route("/home")
@@ -23,6 +22,9 @@ def home():
     link_no_refresh = r.get_authorize_url('UniqueKey')
     link_no_refresh = "<a href=%s>link</a>" % link_no_refresh
     text = "First link. Not refreshable %s</br></br>" % link_no_refresh
+    user = r.get_me()
+    print user.name
+    print user.link_karma
     return render_template("home.html",text=text)
 
 @app.route('/authorize_callback')
